@@ -81,6 +81,10 @@ fi
 
 if [ -n "$LATEST_VERSION" ] && [ "$LATEST_VERSION" != "null" ]; then
     echo "最新版本: $LATEST_VERSION"
+
+    # 删除旧的 management.html（如果存在）
+    rm -f "$MANAGEMENT_HTML_PATH"
+
     if [ -n "$GITHUB_TOKEN" ]; then
         curl -L -H "Authorization: Bearer $GITHUB_TOKEN" \
             -o "$MANAGEMENT_HTML_PATH" \
@@ -92,6 +96,21 @@ if [ -n "$LATEST_VERSION" ] && [ "$LATEST_VERSION" != "null" ]; then
             "https://github.com/ssfun/CLIProxyAPI-Pro/releases/download/${LATEST_VERSION}/management.html" && \
         echo "✓ Pro 管理面板下载成功" || \
         echo "✗ 管理面板下载失败，将使用应用内置版本"
+    fi
+
+    # 验证下载的文件
+    if [ -f "$MANAGEMENT_HTML_PATH" ]; then
+        FILE_SIZE=$(wc -c < "$MANAGEMENT_HTML_PATH")
+        echo "✓ 管理面板文件大小: $FILE_SIZE bytes"
+
+        # 检查是否包含 Pro 功能标识
+        if grep -q "账号巡检\|account-inspection" "$MANAGEMENT_HTML_PATH"; then
+            echo "✓ 确认：包含 Pro 功能（账号巡检）"
+        else
+            echo "⚠ 警告：未检测到账号巡检功能，可能是旧版本"
+        fi
+    else
+        echo "✗ 管理面板文件不存在"
     fi
 else
     echo "✗ 无法获取最新版本信息，将使用应用内置版本"
