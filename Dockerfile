@@ -1,10 +1,13 @@
 # 基于官方 CLIProxyAPI-Pro 镜像
 FROM sfun/cliproxyapi-pro:latest
 
-# 下载最新的管理面板
-ARG MANAGEMENT_VERSION=v7.1.68-pro
-RUN wget -O /CLIProxyAPI/management.html \
-    "https://github.com/ssfun/CLIProxyAPI-Pro/releases/download/${MANAGEMENT_VERSION}/management.html" || \
+# 下载最新的 Pro 管理面板（包含账号巡检功能）
+# 使用 latest release 确保获取最新版本
+RUN apk add --no-cache curl && \
+    LATEST_VERSION=$(curl -s https://api.github.com/repos/ssfun/CLIProxyAPI-Pro/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/') && \
+    echo "Downloading management.html version: $LATEST_VERSION" && \
+    curl -L -o /CLIProxyAPI/management.html \
+    "https://github.com/ssfun/CLIProxyAPI-Pro/releases/download/${LATEST_VERSION}/management.html" || \
     echo "Warning: Failed to download management.html"
 
 # 创建自定义启动脚本
