@@ -61,6 +61,43 @@ mkdir -p /CLIProxyAPI/usage
 echo "✓ /CLIProxyAPI/usage 目录已创建"
 
 echo "=========================================="
+echo "下载最新的 Pro 管理面板..."
+echo "=========================================="
+
+# 下载最新的 Pro 管理面板（支持 GitHub Token 避免 429）
+GITHUB_TOKEN="${GITSTORE_GIT_TOKEN:-${GITHUB_TOKEN:-}}"
+MANAGEMENT_HTML_PATH="/CLIProxyAPI/management.html"
+
+if [ -n "$GITHUB_TOKEN" ]; then
+    echo "✓ 检测到 GitHub Token，使用认证下载"
+    LATEST_VERSION=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+        https://api.github.com/repos/ssfun/CLIProxyAPI-Pro/releases/latest | \
+        grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+else
+    echo "⚠ 未配置 GitHub Token，可能遇到 API 限流"
+    LATEST_VERSION=$(curl -s https://api.github.com/repos/ssfun/CLIProxyAPI-Pro/releases/latest | \
+        grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+fi
+
+if [ -n "$LATEST_VERSION" ] && [ "$LATEST_VERSION" != "null" ]; then
+    echo "最新版本: $LATEST_VERSION"
+    if [ -n "$GITHUB_TOKEN" ]; then
+        curl -L -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -o "$MANAGEMENT_HTML_PATH" \
+            "https://github.com/ssfun/CLIProxyAPI-Pro/releases/download/${LATEST_VERSION}/management.html" && \
+        echo "✓ Pro 管理面板下载成功" || \
+        echo "✗ 管理面板下载失败，将使用应用内置版本"
+    else
+        curl -L -o "$MANAGEMENT_HTML_PATH" \
+            "https://github.com/ssfun/CLIProxyAPI-Pro/releases/download/${LATEST_VERSION}/management.html" && \
+        echo "✓ Pro 管理面板下载成功" || \
+        echo "✗ 管理面板下载失败，将使用应用内置版本"
+    fi
+else
+    echo "✗ 无法获取最新版本信息，将使用应用内置版本"
+fi
+
+echo "=========================================="
 echo "启动 CLIProxyAPI-Pro..."
 echo "=========================================="
 
