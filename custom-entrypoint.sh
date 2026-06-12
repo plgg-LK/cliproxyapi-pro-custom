@@ -29,9 +29,10 @@ server:
 # Usage statistics 必须启用（Pro 版本需要）
 usage-statistics-enabled: true
 
-# 远程管理面板仓库
+# 远程管理面板仓库（重要：必须指向 Pro 仓库才能获取完整功能）
 remote-management:
   panel-github-repository: https://github.com/ssfun/CLIProxyAPI-Pro
+  auto-update: true
 
 # 日志配置
 log:
